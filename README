@@ -16,18 +16,27 @@ http://github.com/nkallen/cache-money
 Example
 =======
 
-Add the following declaration to the viewable model.  We'll use an Upload model for the viewable entity and Viewings
+Add the following declaration to the viewable model.  We'll use an Item model for the viewable entity and Viewings
 for the activity:
 
-acts_as_most_popular :activity_class => Viewing,
-                     :limit => 5,
-                     :db_finder_args => { :select => 'item_id, COUNT(*) AS activity_count',
-                                          :group => 'item_id' }
+class Item < ActiveRecord::Base
+
+  has_many :viewings   # Note: This declaration must _precede_ the acts_as_most_popular declaration!
+
+  acts_as_most_popular :activity_class => Viewing,
+                       :limit => 5,
+                       :db_finder_args => { :select => 'item_id, COUNT(*) AS activity_count',
+                                            :group => 'item_id' }
+end
+
 
 All parameters are required.
+
 :activity_class is the model class that tracks the user activity.
+
 :limit is the number of results you want (number of Upload instances to be returned). The limit will
 also be appended to the :db_finder_args.
+
 :db_finder_args are the arguments for the database calculation of the statistics. These will be used in a call to
 activity_class.find(db_finder_args) and the result will be used to initialize the cache.  It's important that
 there be a count named "activity_count".  :order => 'activity_count DESC' and :limit from above will be appended
@@ -36,17 +45,21 @@ to the arguments.
 Usage:
 ======
 
-Viewing.cached_most_popular => returns a list of 5 (or whatever limit is) Upload instances from cache 
+Item.most_popular => returns a list of 5 (or whatever limit is) Upload instances from cache 
 
 Prerequisites
 =============
 
 Cache Money installed.
 A has_many relationship from the viewable entitiy to the activity class must be declared, e.g.:
-class Upload
+class Item
   has_many :viewings
 end
-The plugin will add after_add and after_remove hooks to the association.
+The plugin will add after_add and after_remove hooks to the association, therefore the has_many association _must_ come before the acts_as_most_popular declaration.
+
+References
+==========
+http://www.slideshare.net/wolframarnold/2009-04-04wa-la-ruby-conf-acts-as-most-popular
 
 TODO
 ====

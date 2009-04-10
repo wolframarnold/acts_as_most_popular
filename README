@@ -1,0 +1,60 @@
+ActsAsMostPopular
+=================
+
+A plugin to solve a common scalability problem on social networking applications.
+It caches joins between a table of viewable entities (e.g. a user profile, images, posts, videos,...)
+and another table that tracks user activity on that entity (e.g. viewings, commenting, ratings,...)
+where the intention is to display a list of viewables in sorted order depending on the amount of
+activity on it, e.g. a ranking of the most viewed posts, most commented videos, etc.
+
+When viewings are added, the plugin keeps the most_popular index automatically updated.
+
+ActsAsMostPopular is built on top of Cache Money which must be installed.  You can get it here:
+http://github.com/nkallen/cache-money
+
+
+Example
+=======
+
+Add the following declaration to the viewable model.  We'll use an Upload model for the viewable entity and Viewings
+for the activity:
+
+acts_as_most_popular :activity_class => Viewing,
+                     :limit => 5,
+                     :db_finder_args => { :select => 'item_id, COUNT(*) AS activity_count',
+                                          :group => 'item_id' }
+
+All parameters are required.
+:activity_class is the model class that tracks the user activity.
+:limit is the number of results you want (number of Upload instances to be returned). The limit will
+also be appended to the :db_finder_args.
+:db_finder_args are the arguments for the database calculation of the statistics. These will be used in a call to
+activity_class.find(db_finder_args) and the result will be used to initialize the cache.  It's important that
+there be a count named "activity_count".  :order => 'activity_count DESC' and :limit from above will be appended
+to the arguments.
+
+Usage:
+======
+
+Viewing.cached_most_popular => returns a list of 5 (or whatever limit is) Upload instances from cache 
+
+Prerequisites
+=============
+
+Cache Money installed.
+A has_many relationship from the viewable entitiy to the activity class must be declared, e.g.:
+class Upload
+  has_many :viewings
+end
+The plugin will add after_add and after_remove hooks to the association.
+
+TODO
+====
+Handle updating of join index when activity count shrinks
+More test coverage if association callbacks are already defined
+
+Copyright (c) 2009 WTA Consulting, Inc., released under the MIT license
+
+Questions, Comments?
+
+Contact: wolfram@wtaconsulting.net, www.rubyfocus.biz

@@ -1,0 +1,20 @@
+test:
+  ttl: 3600
+  namespace: acts_as_most_popular_test
+  sessions: false
+  debug: false
+  servers: localhost:11211
+
+development:
+  ttl: 3600
+  namespace: acts_as_most_popular_development
+  sessions: false
+  debug: false
+  servers: localhost:11211
+
+production:
+  ttl: 604800
+  namespace: acts_as_most_popular_production
+  sessions: false
+  debug: false
+  servers: localhost:11211
